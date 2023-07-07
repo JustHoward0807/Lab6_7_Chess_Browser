@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <_PostProcessingItem Include="ChessBrowser.app/Contents/MacOS/ChessBrowser">
+      <BCSymbolMapName>ChessBrowser.bcsymbolmap</BCSymbolMapName>
+      <NoDSymUtil>true</NoDSymUtil>
+      <dSYMSourcePathExists>false</dSYMSourcePathExists>
+      <NoSymbolStrip>true</NoSymbolStrip>
+      <dSYMInfoPlistRelativePath>ChessBrowser.app.dSYM\Contents\Info.plist</dSYMInfoPlistRelativePath>
+      <SymbolFile>/Users/howard/MSD-2022-2023/CS6016/Lab6_7_Chess_Browser/ChessBrowser/obj/Debug/net7.0-maccatalyst/maccatalyst-x64/mtouch-symbols.list</SymbolFile>
+      <DSymName>ChessBrowser.app.dSYM</DSymName>
+      <SourceProjectPath>/Users/howard/MSD-2022-2023/CS6016/Lab6_7_Chess_Browser/ChessBrowser</SourceProjectPath>
+    </_PostProcessingItem>
+  </ItemGroup>
+</Project>
