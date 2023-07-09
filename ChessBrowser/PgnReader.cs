@@ -1,5 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.Shapes;
+using System.Text.RegularExpressions;
+using GameController;
 
 // We only need Event, Site, Round, White, Black, WhiteElo, BlackElo, Result, EventDate
 namespace ChessBrowser
@@ -29,7 +31,15 @@ namespace ChessBrowser
                     int index = lines[i].IndexOf("\"");
                     int length = lines[i].Length - index - 3;
 
-                    chessGame.setSite(lines[i].Substring(index + 1, length));
+                    if (lines[i].Substring(index + 1, length) == null || lines[i].Substring(index + 1, length).Contains('?'))
+                    {
+                        chessGame.setSite("?");
+                    }
+                    else
+                    {
+                        chessGame.setSite(lines[i].Substring(index + 1, length));
+                    }
+
                 }
 
                 else if (lines[i].StartsWith("[Date "))
@@ -62,10 +72,24 @@ namespace ChessBrowser
 
                 else if (lines[i].StartsWith("[Result "))
                 {
-                    int index = lines[i].IndexOf("\"");
-                    int length = lines[i].Length - index - 3;
+                    Match match = Regex.Match(lines[i], "\"([^\"]*)\"");
+                    if (match.Success)
+                    {
+                        string score = match.Groups[1].Value;
+                        if (score == "1-0")
+                        {
+                            chessGame.setResult("W");
+                        }
+                        else if (score == "0-1")
+                        {
+                            chessGame.setResult("B");
+                        }
+                        else
+                        {
+                            chessGame.setResult("D");
+                        }
 
-                    chessGame.setResult(lines[i].Substring(index + 1, length));
+                    }
                 }
 
                 else if (lines[i].StartsWith("[WhiteElo "))
@@ -95,7 +119,15 @@ namespace ChessBrowser
                     int index = lines[i].IndexOf("\"");
                     int length = lines[i].Length - index - 3;
 
-                    chessGame.setEventDate(lines[i].Substring(index + 1, length));
+                    if (lines[i].Substring(index + 1, length).Contains("?") || lines[i].Substring(index + 1, length) == null)
+                    {
+                        chessGame.setEventDate("0000-00-00");
+                    }
+                    else
+                    {
+                        chessGame.setEventDate(lines[i].Substring(index + 1, length));
+                    }
+
 
                 }
 
