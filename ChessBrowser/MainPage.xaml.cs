@@ -91,7 +91,7 @@ public partial class MainPage : ContentPage
     /// <returns></returns>
     internal string GetConnectionString()
     {
-        return "server=cs-db.eng.utah.edu;database=" + "Team13ChessProject" + ";uid=" + "u1422283" + ";password=" + "1a2a3asql";
+        return "server=cs-db.eng.utah.edu;database=" + "Team13ChessProject" + ";uid=" + username.Text + ";password=" + password.Text;
     }
 }
 

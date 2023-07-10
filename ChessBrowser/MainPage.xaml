@@ -186,6 +186,7 @@
                 </VerticalStackLayout>
             </Border>
             <Border Grid.Column="1" Grid.Row="0">
+
                 <Editor
 
             x:Name="outputText"

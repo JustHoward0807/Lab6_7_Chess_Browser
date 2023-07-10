@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -142,29 +143,132 @@ namespace ChessBrowser
                 try
                 {
                     Console.WriteLine("Reading...");
+
                     // Open a connection
                     conn.Open();
-                    MySqlCommand command = conn.CreateCommand();
+                    string query = $"SELECT* FROM(SELECT e.Date, e.Site, e.Name, g.Result, p.Name AS WhitePlayer, p.Elo as WhiteElo, p2.Name as BlackPlayer,p2.Elo as BlackElo, g.Moves FROM Games g JOIN Players p ON g.WhitePlayer = p.pID JOIN Events e ON g.eID = e.eID JOIN Players p2 ON p2.pID = g.BlackPlayer) AS sub where ";
+
+                    if (!string.IsNullOrEmpty(white))
+                    {
+                        query += "sub.WhitePlayer = @white and ";
+                    }
+
+                    if (!string.IsNullOrEmpty(black))
+                    {
+                        query += "sub.BlackPlayer = @black and ";
+                    }
+
+                    if (!string.IsNullOrEmpty(opening))
+                    {
+                        query += "sub.Moves like @opening and ";
+                    }
+
+                    if (!string.IsNullOrEmpty(winner))
+                    {
+                        query += "sub.Result = @winner and ";
+                    }
+
+                    if (useDate)
+                    {
+
+                        query += "sub.Date BETWEEN @startTime AND @endTime and ";
+                    }
+
+                    if (string.IsNullOrEmpty(white) && string.IsNullOrEmpty(black) && string.IsNullOrEmpty(opening) && !useDate && string.IsNullOrEmpty(winner))
+                    {
+                        query = query.Substring(0, query.Length - 7);
+                    }
+                    else
+                    {
+                        query = query.Substring(0, query.Length - 4);
+                    }
+
+
+
+                    Console.WriteLine(query);
 
                     //Commands that will give me 8 result just like assignments
                     //SELECT* FROM(SELECT e.Date, e.Site, e.Name, g.Result, p.Name AS WhitePlayer, p.Elo, p2.Name as BlackPlayer FROM Games g     JOIN Players p ON g.WhitePlayer = p.pID     JOIN Events e ON g.eID = e.eID     JOIN Players p2 ON p2.pID = g.BlackPlayer) AS sub WHERE sub.WhitePlayer = 'Carlsen, Magnus' AND sub.Result = 'W';
 
+                    using (MySqlCommand command = conn.CreateCommand())
+                    {
+                        command.CommandText = query;
+                        if (!string.IsNullOrEmpty(white))
+                        {
+                            command.Parameters.AddWithValue("@white", white);
+                        }
 
-                    //TODO: Prevent injection attack
-                    //command.CommandText = $"select * from Games where WhitePlayer = 366953 and Result = 'W'";
-                    //using (MySqlDataReader reader = command.ExecuteReader())
-                    //{
-                    //    while (reader.Read())
-                    //    {
-                    //        Console.WriteLine(reader.GetString("Round"));
-                    //        //Console.WriteLine(reader.GetInt32("Elo"));
-                    //        //Console.WriteLine(reader.GetInt32("pID"));
-                    //    }
-                    //}
-                    // TODO:
-                    //       Generate and execute an SQL command,
-                    //       then parse the results into an appropriate string and return it.
+                        if (!string.IsNullOrEmpty(black))
+                        {
+                            command.Parameters.AddWithValue("@black", black);
+                        }
 
+                        if (!string.IsNullOrEmpty(opening))
+                        {
+                            opening += "%";
+                            command.Parameters.AddWithValue("@opening", opening);
+                        }
+
+                        if (!string.IsNullOrEmpty(winner))
+                        {
+                            command.Parameters.AddWithValue("@winner", winner);
+                        }
+                        if (useDate)
+                        {
+                            command.Parameters.AddWithValue("@startTime", start);
+                            command.Parameters.AddWithValue("@endTime", end);
+                        }
+
+                        using (MySqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                try
+                                {
+                                    numRows++;
+                                    string eventName = reader.GetString("Name");
+                                    string site = reader.GetString("Site");
+                                    char result = reader.GetChar("Result");
+                                    DateTime eventDate = reader.GetDateTime("Date");
+                                    string whiteP = reader.GetString("WhitePlayer");
+                                    string blackP = reader.GetString("BlackPlayer");
+                                    int whiteElo = reader.GetInt32("WhiteElo");
+                                    int blackElo = reader.GetInt32("BlackElo");
+                                    string moves = reader.GetString("Moves");
+                                    //Console.WriteLine(eventName);
+                                    //Console.WriteLine(site);
+                                    //Console.WriteLine(result);
+                                    //Console.WriteLine(eventDate);
+                                    //Console.WriteLine(whiteP);
+                                    //Console.WriteLine(blackP);
+                                    //Console.WriteLine(whiteElo);
+                                    //Console.WriteLine(blackElo);
+                                    //Console.WriteLine("-------------------");
+
+
+                                    parsedResult += "\n" + "Event: " + eventName + "\n"
+                                        + "Site: " + site + "\n"
+                                        + "Date: " + eventDate + "\n"
+                                        + "White: " + whiteP + " (" + whiteElo + ")" + "\n"
+                                        + "Black: " + blackP + " (" + blackElo + ")" + "\n"
+                                        + "Result: " + result + "\n";
+                                    if (showMoves)
+                                    {
+                                        parsedResult += "Moves: " + moves + "\n";
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+
+                                    System.Diagnostics.Debug.WriteLine(e.Message);
+                                    continue;
+                                }
+
+
+                            }
+                        }
+                    }
+                    Console.WriteLine(numRows);
                     Console.WriteLine("Finish");
                 }
                 catch (Exception e)
