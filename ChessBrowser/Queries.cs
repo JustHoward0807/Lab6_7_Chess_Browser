@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Controls;
 using MySqlConnector;
 using System;
@@ -58,13 +59,14 @@ namespace ChessBrowser
                         using (MySqlCommand command = conn.CreateCommand())
                         {
                             // Insert into Players
-                            command.CommandText = "INSERT INTO Players(Name, Elo) VALUES(@white, @whiteElo) ON DUPLICATE KEY UPDATE Elo = IF(Name = @white, GREATEST(VALUES(Elo), @whiteElo), Elo);";
+
+                            command.CommandText = "INSERT INTO Players(Name, Elo) VALUES(@white, @whiteElo) ON DUPLICATE KEY UPDATE Elo = GREATEST(VALUES(Elo), @whiteElo);";
                             command.Parameters.AddWithValue("@white", chessGame.white);
                             command.Parameters.AddWithValue("@whiteElo", chessGame.whiteElo);
                             command.ExecuteNonQuery();
 
 
-                            command.CommandText = "INSERT INTO Players(Name, Elo) VALUES(@black, @blackElo) ON DUPLICATE KEY UPDATE Elo = IF(Name = @black, GREATEST(VALUES(Elo), @blackElo), Elo);";
+                            command.CommandText = "INSERT INTO Players(Name, Elo) VALUES(@black, @blackElo) ON DUPLICATE KEY UPDATE Elo = GREATEST(VALUES(Elo), @blackElo);";
 
                             command.Parameters.AddWithValue("@black", chessGame.black);
                             command.Parameters.AddWithValue("@blackElo", chessGame.blackElo);
@@ -80,7 +82,7 @@ namespace ChessBrowser
 
 
                             // Insert into Games
-                            command.CommandText = "INSERT IGNORE INTO Games VALUES(@round, @result, @moves, (SELECT pID FROM Players WHERE Name = @black), (SELECT pID FROM Players WHERE Name = @white), (SELECT eID FROM Events WHERE Name = @eventName))";
+                            command.CommandText = "INSERT IGNORE INTO Games VALUES(@round, @result, @moves, (SELECT pID FROM Players WHERE Name = @black), (SELECT pID FROM Players WHERE Name = @white), (SELECT eID FROM Events WHERE Name = @eventName and Site = @site and Date = @eventDate))";
 
 
                             command.Parameters.AddWithValue("@round", chessGame.round);
@@ -92,17 +94,9 @@ namespace ChessBrowser
                         await mainPage.NotifyWorkItemCompleted();
                     }
 
-                    //using (MySqlDataReader reader = command.ExecuteReader())
-                    //{
-                    //    while (reader.Read())
-                    //    {
-                    //        Console.WriteLine(reader.GetString("Name"));
-                    //        Console.WriteLine(reader.GetInt32("Elo"));
-                    //        Console.WriteLine(reader.GetInt32("pID"));
-                    //    }
 
                     Console.WriteLine("Finished reading");
-                    //}
+
 
 
                 }
@@ -147,12 +141,31 @@ namespace ChessBrowser
             {
                 try
                 {
+                    Console.WriteLine("Reading...");
                     // Open a connection
                     conn.Open();
+                    MySqlCommand command = conn.CreateCommand();
 
+                    //Commands that will give me 8 result just like assignments
+                    //SELECT* FROM(SELECT e.Date, e.Site, e.Name, g.Result, p.Name AS WhitePlayer, p.Elo, p2.Name as BlackPlayer FROM Games g     JOIN Players p ON g.WhitePlayer = p.pID     JOIN Events e ON g.eID = e.eID     JOIN Players p2 ON p2.pID = g.BlackPlayer) AS sub WHERE sub.WhitePlayer = 'Carlsen, Magnus' AND sub.Result = 'W';
+
+
+                    //TODO: Prevent injection attack
+                    //command.CommandText = $"select * from Games where WhitePlayer = 366953 and Result = 'W'";
+                    //using (MySqlDataReader reader = command.ExecuteReader())
+                    //{
+                    //    while (reader.Read())
+                    //    {
+                    //        Console.WriteLine(reader.GetString("Round"));
+                    //        //Console.WriteLine(reader.GetInt32("Elo"));
+                    //        //Console.WriteLine(reader.GetInt32("pID"));
+                    //    }
+                    //}
                     // TODO:
                     //       Generate and execute an SQL command,
                     //       then parse the results into an appropriate string and return it.
+
+                    Console.WriteLine("Finish");
                 }
                 catch (Exception e)
                 {
