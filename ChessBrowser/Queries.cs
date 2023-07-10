@@ -60,13 +60,13 @@ namespace ChessBrowser
                         {
                             // Insert into Players
 
-                            command.CommandText = "INSERT INTO Players(Name, Elo) VALUES(@white, @whiteElo) ON DUPLICATE KEY UPDATE Elo = GREATEST(VALUES(Elo), @whiteElo);";
+                            command.CommandText = "INSERT INTO Players(Name, Elo) VALUES(@white, @whiteElo) ON DUPLICATE KEY UPDATE Elo = GREATEST(Elo, @whiteElo);";
                             command.Parameters.AddWithValue("@white", chessGame.white);
                             command.Parameters.AddWithValue("@whiteElo", chessGame.whiteElo);
                             command.ExecuteNonQuery();
 
 
-                            command.CommandText = "INSERT INTO Players(Name, Elo) VALUES(@black, @blackElo) ON DUPLICATE KEY UPDATE Elo = GREATEST(VALUES(Elo), @blackElo);";
+                            command.CommandText = "INSERT INTO Players(Name, Elo) VALUES(@black, @blackElo) ON DUPLICATE KEY UPDATE Elo = GREATEST(Elo, @blackElo);";
 
                             command.Parameters.AddWithValue("@black", chessGame.black);
                             command.Parameters.AddWithValue("@blackElo", chessGame.blackElo);
