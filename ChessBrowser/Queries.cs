@@ -34,13 +34,6 @@ namespace ChessBrowser
             Console.WriteLine("Read File");
             List<ChessGame> chessGameList = PgnReader.readFile(PGNfilename);
 
-            // TODO:
-            //       Load and parse the PGN file
-            //       We recommend creating separate libraries to represent chess data and load the file
-
-            // TODO:
-            //       Use this to tell the GUI's progress bar how many total work steps there are
-            //       For example, one iteration of your main upload loop could be one work step
             mainPage.SetNumWorkItems(chessGameList.Count);
 
 
@@ -146,32 +139,32 @@ namespace ChessBrowser
 
                     // Open a connection
                     conn.Open();
-                    string query = $"SELECT* FROM(SELECT e.Date, e.Site, e.Name, g.Result, p.Name AS WhitePlayer, p.Elo as WhiteElo, p2.Name as BlackPlayer,p2.Elo as BlackElo, g.Moves FROM Games g JOIN Players p ON g.WhitePlayer = p.pID JOIN Events e ON g.eID = e.eID JOIN Players p2 ON p2.pID = g.BlackPlayer) AS sub where ";
+                    string query = $"SELECT * FROM(SELECT e.Date, e.Site, e.Name, g.Result, p.Name AS WhitePlayer, p.Elo AS WhiteElo, p2.Name AS BlackPlayer,p2.Elo AS BlackElo, g.Moves FROM Games g JOIN Players p ON g.WhitePlayer = p.pID JOIN Events e ON g.eID = e.eID JOIN Players p2 ON p2.pID = g.BlackPlayer) AS sub WHERE ";
 
                     if (!string.IsNullOrEmpty(white))
                     {
-                        query += "sub.WhitePlayer = @white and ";
+                        query += "sub.WhitePlayer = @white AND ";
                     }
 
                     if (!string.IsNullOrEmpty(black))
                     {
-                        query += "sub.BlackPlayer = @black and ";
+                        query += "sub.BlackPlayer = @black AND ";
                     }
 
                     if (!string.IsNullOrEmpty(opening))
                     {
-                        query += "sub.Moves like @opening and ";
+                        query += "sub.Moves LIKE @opening AND ";
                     }
 
                     if (!string.IsNullOrEmpty(winner))
                     {
-                        query += "sub.Result = @winner and ";
+                        query += "sub.Result = @winner AND ";
                     }
 
                     if (useDate)
                     {
 
-                        query += "sub.Date BETWEEN @startTime AND @endTime and ";
+                        query += "sub.Date BETWEEN @startTime AND @endTime AND ";
                     }
 
                     if (string.IsNullOrEmpty(white) && string.IsNullOrEmpty(black) && string.IsNullOrEmpty(opening) && !useDate && string.IsNullOrEmpty(winner))
@@ -186,9 +179,6 @@ namespace ChessBrowser
 
 
                     Console.WriteLine(query);
-
-                    //Commands that will give me 8 result just like assignments
-                    //SELECT* FROM(SELECT e.Date, e.Site, e.Name, g.Result, p.Name AS WhitePlayer, p.Elo, p2.Name as BlackPlayer FROM Games g     JOIN Players p ON g.WhitePlayer = p.pID     JOIN Events e ON g.eID = e.eID     JOIN Players p2 ON p2.pID = g.BlackPlayer) AS sub WHERE sub.WhitePlayer = 'Carlsen, Magnus' AND sub.Result = 'W';
 
                     using (MySqlCommand command = conn.CreateCommand())
                     {
